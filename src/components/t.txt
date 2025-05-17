@@ -1,0 +1,33 @@
+import * as React from 'react';
+import { PieChart } from '@mui/x-charts/PieChart';
+
+const rawData = [
+  { id: 0, value: 10, label: 'series A' },
+  { id: 1, value: 15, label: 'series B' },
+  { id: 2, value: 20, label: 'series C' },
+];
+
+// Tính tổng
+const total = rawData.reduce((sum, item) => sum + item.value, 0);
+
+// Thêm phần trăm vào label
+const data = rawData.map((item) => ({
+  ...item,
+  label: `${item.label} (${((item.value / total) * 100).toFixed(1)}%)`,
+}));
+
+export default function PieActiveArc() {
+  return (
+    <PieChart
+      series={[
+        {
+        arcLabel: (item) => `${item.label}`,
+          data,
+          highlightScope: { faded: 'global', highlighted: 'item' },
+          faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+        },
+      ]}
+      height={200}
+    />
+  );
+}
