@@ -57,15 +57,16 @@ const Content = ({ selectedFileNames }) => {
   };
 
   const handleChangeType = async (event) => {
-    if (event.target.value === "alltime") {
-      setTypeStatistic(event.target.value);
-      return;
+    setTypeStatistic(event.target.value);
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/start-end-time",
+        selectedFileNames
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
     }
-    const response = await axios.post(
-      "http://localhost:5000/api/start-end-time",
-      selectedFileNames
-    );
-    console.log(response);
   };
 
   const handleOnClickStatistic = async (event) => {
@@ -79,18 +80,10 @@ const Content = ({ selectedFileNames }) => {
     console.log("data send BE", payload);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/start-end-time",
+        "http://localhost:5000/api/statistic",
         payload
       );
-      //  console.log(typeof startTime.format("YYYY-MM-DD"));
-      //  console.log(endTime.format("YYYY-MM-DD"));
-      //  console.log(typeStatistic);
-      //  console.log(selectedFileNames);
-
-      // if (response.status === 200) {
-
-      // }
-      
+      console.log(response);
     } catch (error) {
       toast.error("Có lỗi xảy ra", response.data.message);
     }
@@ -181,7 +174,7 @@ const Content = ({ selectedFileNames }) => {
       </Box>
 
       <Box sx={{ height: 400, display: "flex", flexDirection: "row" }}>
-        <Box sx={{ width: "900px" }}>
+        <Box sx={{ mr: "30px" }}>
           <BarChart
             width={800}
             height={300}
@@ -196,9 +189,13 @@ const Content = ({ selectedFileNames }) => {
             xAxis={xAxis}
           />
         </Box>
-        <Box>Chỗ này vẽ biểu đồ tròn cụ thể</Box>
+        <Box>Chỗ này vẽ biểu đồ tròn</Box>
       </Box>
-      <Box sx={{ height: 400 }}>Chỗ này sẽ hiển thị cột</Box>
+      <Box sx={{ height: 400 }}>
+        {(typeStatistic === "day" || typeStatistic === "month") && (
+          <>Hiển thị biểu đồ đường</>
+        )}
+      </Box>
     </Box>
   );
 };
