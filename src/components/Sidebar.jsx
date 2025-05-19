@@ -15,6 +15,11 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { viVN } from "@mui/x-data-grid/locales";
 
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -35,27 +40,23 @@ const Sidebar = ({ setSelectedFileNames }) => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
 
-  const [listFileName, setListFileName] = useState([
-    //  { id: 1, nameFile: "File 1" },
-    //  { id: 2, nameFile: "File 2" },
-    //  { id: 3, nameFile: "File 3" },
-    //  { id: 4, nameFile: "File 4" },
-    //  { id: 5, nameFile: "File 5" },
-    //  { id: 6, nameFile: "File 6" },
-    //  { id: 7, nameFile: "File 7" },
-    //  { id: 8, nameFile: "File 8" },
-    //  { id: 9, nameFile: "File 9" },
-    //  { id: 10, nameFile: "File 10" },
-    //  { id: 11, nameFile: "File 11" },
-    //  { id: 12, nameFile: "File 12" },
-    //  { id: 13, nameFile: "File 13" },
-    //  { id: 14, nameFile: "File 14" },
-  ]);
+  const [listFileName, setListFileName] = useState([]);
 
   const [rowSelectionModel, setRowSelectionModel] = useState({
     type: "include",
     ids: new Set(),
   });
+
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const convert_data = (data) => {
     return data.map((item) => ({
       id: item.fileId,
@@ -118,8 +119,7 @@ const Sidebar = ({ setSelectedFileNames }) => {
         isLoading: false,
         closeOnClick: true,
       });
-      console.log("Phản hồi từ server:", response.data);
-
+      setFileName("");
       await fetchListFileName();
     } catch (error) {
       console.error("Lỗi khi gửi file:", error);
@@ -147,18 +147,26 @@ const Sidebar = ({ setSelectedFileNames }) => {
   const handleDeleteListFileName = async () => {
     // Call APi để xóa 1 danh sách các filename bao gồm id.
     // Sau đó call lại api để lấy danh sách các filename gồm id và filename
-
     //Lấy danh sách các id được chọn
     const selectedListFileName = Array.from(rowSelectionModel.ids);
-    console.log("filename to delete", selectedListFileName);
+    if (selectedListFileName.length === 0) {
+      toast.error("Vui lòng chọn danh sách cần xóa");
+      setOpen(false);
+      return;
+    }
 
-    //  const response = await axios.delete("");
-    //  if (response.success) {
-    //    setListFileName();
-    //  } else {
-    //    //Log ra lỗi
-    //    setListFileName([]);
-    //  }
+    const response = await axios.delete(
+      "http://localhost:5000/api/delete-list-file",
+      selectedListFileName
+    );
+
+    if (response.success) {
+      toast.success("Xóa thành công!");
+      await fetchListFileName();
+    } else {
+      //Log ra lỗi
+      toast.error("Đã có lỗi khi xóa!");
+    }
     return;
   };
 
@@ -265,10 +273,28 @@ const Sidebar = ({ setSelectedFileNames }) => {
           aria-label="delete"
           size="small"
           color="error"
-          onClick={handleDeleteListFileName}
+          onClick={handleClickOpen}
         >
           <DeleteIcon fontSize="inherit" />
         </IconButton>
+        <Dialog
+          open={open}
+          keepMounted
+          onClose={handleClose}
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <DialogContent>
+            <DialogContentText id="alert-dialog-slide-description">
+              Bạn có chắc muốn xóa danh sách các file trên?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Hủy</Button>
+            <Button color="error" onClick={handleDeleteListFileName}>
+              Xóa
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
 
       {/* File list */}
