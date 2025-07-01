@@ -34,7 +34,6 @@ const Content = ({ selectedFileNames }) => {
   const [dataPie, setDataPie] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState(null);
 
-
   const convertStatsByTimeToChartData = (stats_by_time) => {
     const xLabels = Object.keys(stats_by_time).sort();
     const positive = [];
@@ -71,6 +70,10 @@ const Content = ({ selectedFileNames }) => {
 
   const handleChangeType = async (event) => {
     setTypeStatistic(event.target.value);
+    setDataLine({ series: [], xLabels: [] });
+    setDataBar({ series: [], xAxis: [] });
+    setDataPie([]);
+    setShowDetail(false);
     try {
       const response = await axios.post(
         "http://localhost:5000/api/start-end-time",
@@ -87,6 +90,10 @@ const Content = ({ selectedFileNames }) => {
 
   const handleOnClickStatistic = async (event) => {
     event.preventDefault();
+    if (startTime.isAfter(endTime)) {
+      toast.error("Thời gian bắt đầu không được lớn hơn thời gian kết thúc"); 
+      return;
+    }
     const payload = {
       startTime: startTime.format("YYYY-MM-DD HH:mm:ss"),
       endTime: endTime.format("YYYY-MM-DD HH:mm:ss"),
@@ -181,7 +188,7 @@ const Content = ({ selectedFileNames }) => {
                   onChange={setStartTime}
                   format={typeStatistic === "month" ? "MM/YYYY" : "YYYY"}
                   views={
-                    typeStatistic === "month" ? ["month", "day"] : ["year"]
+                    typeStatistic === "month" ? ["month", "year"] : ["year"]
                   }
                 />
                 <DatePicker
@@ -259,7 +266,7 @@ const Content = ({ selectedFileNames }) => {
             series={dataLine.series}
             xAxis={[{ scaleType: "point", data: dataLine.xLabels }]}
             yAxis={[{ width: 50 }]}
-            margin={{right: 50}}
+            margin={{ right: 50 }}
           />
         </Box>
       )}
